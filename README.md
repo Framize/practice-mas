@@ -138,12 +138,28 @@ got that far, your setup is finished and the rest is yours.
 ## What is in the box
 
 ```
-main.py          your workspace. A skeleton with TODOs, and the three shapes
-                 written out as comments so you can pick one.
-common.py        the plumbing. Works already; you should not need to edit it.
-pyproject.toml   the package list.
-.env.example     copy this to .env and put your key in it.
+01_sequential.py    one pattern each. Runnable skeletons: fill in the TODOs
+02_parallel.py      and each one works on its own. Read them first, steal
+03_orchestrator.py  from them freely.
+
+main.py             your workspace. Where all three come together.
+common.py           the plumbing. Works already; you should not need to edit it.
+pyproject.toml      the package list.
+.env.example        copy this to .env and put your key in it.
 ```
+
+**Start with the numbered files.** Each one is the smallest thing that shows its
+pattern working, and each carries one extra mechanic you will want later:
+
+| File | Pattern | Also shows |
+| --- | --- | --- |
+| `01_sequential.py` | a fixed chain | writing a tool of your own with `@function_tool` |
+| `02_parallel.py` | independent work at once | the built-in `WebSearchTool` |
+| `03_orchestrator.py` | the agent decides as it goes | structured output with `output_type` |
+
+Run each one as it comes, unchanged, to see the mechanic move. Then fill in its
+TODOs. Then build the real thing in `main.py`, where all three have to work
+together.
 
 ### The helpers in `common.py`
 
