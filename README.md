@@ -12,17 +12,28 @@ between them.
 
 ## What you will build
 
-A small system where more than one agent is involved and the result is better
-than one agent could manage alone. That is the whole brief. Some directions
-people take:
+A system of your own that uses **all three patterns** — sequential, parallel,
+and orchestrator — each doing the part of the work it actually suits.
 
-- a research desk that looks something up and then checks its own answer
-- a writing pipeline: draft, then edit, then rewrite in a different voice
-- a triage system that reads a request and routes it to the right specialist
-- an investigator that follows a trail of clues one step at a time
+That is the brief, and the "all three" is the hard part. Any one of them alone
+is a few lines. Making one problem want all three means finding the piece of it
+whose order is fixed, the piece whose order does not matter, and the piece
+whose next step cannot be known until something comes back.
 
-Start smaller than you think. Two agents in a line, working end to end, beats
-six agents that half-run.
+Pick a subject you would actually like the answer to. Some directions people
+take:
+
+- a research desk that gathers sources, digs into the promising one, then
+  drafts and checks what it found
+- an incident investigator that reads several logs, follows the trail into
+  whichever one looks worst, then writes the report
+- a trip planner that prices several options at once, interrogates the
+  cheapest, then produces an itinerary
+- a code reviewer that runs several kinds of check, chases the failure that
+  matters, then writes the review
+
+Start smaller than you think. Get two agents talking end to end first, then
+grow the shape around them.
 
 ---
 
@@ -149,8 +160,9 @@ pyproject.toml   the package list.
 
 ## The three shapes
 
-They are not interchangeable. Each answers a different question: **who decides
-what happens next?**
+They are not alternatives to choose between — your system uses all three. What
+makes them different is that each gives a different answer to one question:
+**who decides what happens next?**
 
 ### Sequential — you decide the order
 
@@ -186,6 +198,30 @@ will happen.
 
 Give it a **budget** — a maximum number of handoffs. An agent that can keep
 asking for help forever will do exactly that.
+
+### Putting all three together
+
+The patterns nest. One arrangement that works: the outer shape is sequential,
+its first step fans out in parallel, and its second hands control to an
+orchestrator.
+
+```
+STAGE 1  parallel       gather independent things at once
+   |
+STAGE 2  orchestrator   dig in: call one, read it, decide who is next
+   |
+STAGE 3  sequential     draft -> check -> rewrite, in that fixed order
+```
+
+That is *an* arrangement, not *the* arrangement — nest them however your
+problem wants. Two things do not count, and both are easy to spot from the
+outside:
+
+- a **parallel** stage whose pieces secretly need each other's answers
+- an **orchestrator** whose next call was never actually in doubt
+
+If you could have written the sequence down before running it, that stage is
+sequential wearing a costume.
 
 ---
 

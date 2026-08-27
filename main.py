@@ -81,25 +81,44 @@ worker = Agent(
 # 3. THE SHAPE -- how work moves between them
 # ===========================================================================
 #
-# Pick one of the three and delete the others. They are not interchangeable;
-# each answers a different question about who decides what.
+# Your system must use ALL THREE. They are not alternatives you choose between;
+# they nest, and any system big enough to be interesting contains all of them at
+# different levels.
 #
-#   SEQUENTIAL   you decide the order      A -> B -> C, every time
-#   PARALLEL     you decide the pieces     A, B, C at once, every time
-#   ORCHESTRATOR the agent decides         A -> ? -> ?, worked out as it goes
+#   SEQUENTIAL    you decide the order       A -> B -> C, every time
+#   PARALLEL      you decide the pieces      A, B, C at once, every time
+#   ORCHESTRATOR  the agent decides          A -> ? -> ?, worked out as it goes
+#
+# The three answer the same question -- who decides what happens next? -- and
+# give three different answers. That is why one system can want all three: some
+# steps have an order you already know, some have none, and some cannot be known
+# until an earlier answer comes back.
+#
+# One arrangement that works. The outer shape is sequential; its first step fans
+# out in parallel, and its second hands control to an orchestrator:
+#
+#     STAGE 1  parallel      gather independent things at once
+#        |
+#     STAGE 2  orchestrator  dig in: call one, read it, decide who is next
+#        |
+#     STAGE 3  sequential    draft -> check -> rewrite, in that fixed order
+#
+# That is AN arrangement, not THE arrangement. Nest them however your problem
+# actually wants. What does not count: a parallel stage whose pieces secretly
+# depend on each other, or an orchestrator whose next call was never in doubt.
+# Those are the pattern in name only, and they are easy to spot.
 #
 # ---------------------------------------------------------------------------
 # SEQUENTIAL -- each agent's output is the next one's input.
-# Use when the steps have a real order that cannot be shuffled.
 #
 #     first = await stream("STEP 1  ...", agent_a, TASK)
 #     second = await stream("STEP 2  ...", agent_b, first.final_output)
 #
 # ---------------------------------------------------------------------------
 # PARALLEL -- independent work, launched together, nobody waiting.
-# Use when no piece needs any other piece's answer. run_many() takes
-# (label, agent, input) triples and narrates progress instead of text, because
-# three agents streaming into one terminal is unreadable.
+# run_many() takes (label, agent, input) triples, narrates progress instead of
+# text (three agents streaming into one terminal is unreadable), and returns
+# results in the order you gave them.
 #
 #     results = await run_many([
 #         ("LabelA", agent_a, "..."),
@@ -130,6 +149,7 @@ worker = Agent(
 # ===========================================================================
 
 TASK = "TODO: what are you actually asking this system to do?"
+MAX_HANDOFFS = 4  # the orchestrator stage never gets more calls than this
 
 
 async def main():
@@ -137,9 +157,29 @@ async def main():
     print(f"TASK  {TASK}")
     print("=" * 70)
 
-    # TODO: build your shape here. Start with two agents in a line, get that
-    # working, and only then reach for something cleverer.
-    result = await stream("STEP 1  TODO-Worker  --  TODO: what it does", worker, TASK)
+    # -- STAGE 1: PARALLEL ---------------------------------------------------
+    # TODO: what can be gathered at the same time because no piece needs any
+    # other piece's answer? Replace these with your own agents.
+    gathered = await run_many(
+        [
+            ("TODO-A", worker, TASK),
+            ("TODO-B", worker, TASK),
+        ]
+    )
+    notes = "\n\n".join(strip_citations(r.final_output) for r in gathered)
+
+    # -- STAGE 2: ORCHESTRATOR -----------------------------------------------
+    # TODO: build the loop. One agent reads what stage 1 found, calls a single
+    # specialist, reads the answer, and only then chooses the next one. Stop
+    # early when it has what it needs -- unused handoffs are a win.
+    #
+    #   for handoff in range(1, MAX_HANDOFFS + 1):
+    #       ...
+    findings = notes  # TODO: replace with what the loop actually turned up
+
+    # -- STAGE 3: SEQUENTIAL -------------------------------------------------
+    # TODO: a fixed chain to finish with. Each output feeds the next.
+    result = await stream("STAGE 3  TODO-Worker  --  TODO: what it does", worker, findings)
 
     print(f"\n{'=' * 70}\nRESULT\n{'=' * 70}")
     print(wrapped(result.final_output))
